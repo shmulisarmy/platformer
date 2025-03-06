@@ -1,5 +1,11 @@
 
-from classes.object import Object
+
+
+from typing import TYPE_CHECKING
+
+
+if TYPE_CHECKING:
+    from classes.object import Object
 
 
 middle_position = {
@@ -9,7 +15,7 @@ middle_position = {
 
 
 
-def camera_follow(object: Object):
+def camera_follow(object: 'Object'):
     if middle_position['x']-5 > object.x:
         amount_to_follow =  max( ( middle_position['x'] - object.x )/40, 5)
         middle_position['x'] -= amount_to_follow

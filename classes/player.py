@@ -18,6 +18,7 @@ class Player(Object):
         self.Jump_Velocity = 0
         self.jump_amount = 0
         self.coins_collected = 0
+        self.health: int = 60
 
         self.sprite = None
         # [
@@ -40,13 +41,7 @@ class Player(Object):
         
     def is_jumping(self): return self.jump_amount > 0 
 
-    def draw(self, camera_middle):
-        if self.image:
-            scaled_image = pygame.transform.scale(self.image, (self.size_x, self.size_y))
-            screen.blit(scaled_image, (self.x - (camera_middle['x']-WIDTH//2), self.y - (camera_middle['y']-HEIGHT//2)))
-        else:
-            pygame.draw.rect(screen, self.color, (self.x - camera_middle['x'], self.y - camera_middle['y'], self.size_x, self.size_y))
-
+  
     def attempt_to_move_to(self, new_x, new_y):
         if not games_state['current_level'].colliding_with_board(Object(new_y, new_x, self.size_x, self.size_y)):
             self.x = new_x
@@ -89,6 +84,9 @@ class Player(Object):
             self.fall()
         else:
             self.gravity_amount = self.Base_Gravity_Amount
+
+        
+        list(self.followers.keys())[-1].size_x = self.health
 
 
         coins_collected_this_frame=games_state['current_level'].collect_coins(self)

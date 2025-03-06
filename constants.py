@@ -1,5 +1,15 @@
 WHITE = (255, 255, 255)
 RED = (255, 0, 0)
+LIGHT_RED = (255, 128, 128)
+
 GREEN = (0, 255, 0)
 BLUE = (0, 0, 255)
 BLACK = (0, 0, 0)
+LIGHT_BLUE = (0, 191, 255)
+LIGHT_GREEN = (150, 220, 150)
+YELLOW = (220, 220, 0)
+
+DARK_BLUE = (0, 0, 128)
+
+
+GREY = (128, 128, 128)
