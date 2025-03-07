@@ -1,1 +1,2 @@
-![Platformer Demo](https://github.com/shmulisarmy/platformer/blob/main/demo.mov?raw=true)
+![Platformer Demo](https://github.com/shmulisarmy/platformer/blob/main/demo.mov)
+
