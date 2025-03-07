@@ -1,6 +1,8 @@
 from collections import defaultdict
 from dataclasses import dataclass
+import random
 import pygame
+import camera
 from classes.object import Object, Pos
 from custom_event_loop import scheduled_events, scheduled_event, frames_passed
 
@@ -35,9 +37,25 @@ c = 2
 
 
 
+from random import randint
 
 
 
+@dataclass
+class Sand_pixel(Object):
+    live: bool = True
+    till_melted_countdown: int = 2
+    fall_amount: int = 2
+
+
+sand_pixels: list[Sand_pixel] = []
+
+def add_sand_pixel():
+    sand_pixels.append( Sand_pixel(
+        0, 
+        randint(0, len(games_state['current_level'].board[0])-2)*CUBE_WIDTH, 
+        2, 2, color=LIGHT_BLUE)
+    )
 
 
 
@@ -49,6 +67,7 @@ c = 2
 
 
 player = Player()
+player2 = Player(pygame.image.load("images/old-duck.png"))
 
 
 player.followers[Object(0, 0, 10, 60, color=GREY)] = Pos(-10, -5)
@@ -108,30 +127,59 @@ buttons_flexer([
     "use liver sword",
 ], start_y=HEIGHT-30, gap=40)
 
+
+camera.player_being_followed = player
+
 def handle_keyboard_events():
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             pygame.quit()
             quit()
         elif event.type == pygame.KEYDOWN:
-            if event.key in (pygame.K_DOWN, pygame.K_s):
+            if event.key == pygame.K_DOWN:
                 player.pressed_keys["down"] = True
-            elif event.key in (pygame.K_UP, pygame.K_w):
+            elif event.key == pygame.K_UP:
                 player.pressed_keys["up"] = True
-            elif event.key in (pygame.K_LEFT, pygame.K_a):
+            elif event.key == pygame.K_LEFT:
                 player.pressed_keys["left"] = True
-            elif event.key in (pygame.K_RIGHT, pygame.K_d):
+            elif event.key == pygame.K_RIGHT:
                 player.pressed_keys["right"] = True
+        
+
+            if event.key == pygame.K_s:
+                player2.pressed_keys["down"] = True
+            elif event.key == pygame.K_w:
+                player2.pressed_keys["up"] = True
+            elif event.key == pygame.K_a:
+                player2.pressed_keys["left"] = True
+            elif event.key == pygame.K_d:
+                player2.pressed_keys["right"] = True
+
+
+            if event.key == pygame.K_p:
+                camera.player_being_followed = player
+            elif event.key == pygame.K_o:
+                camera.player_being_followed = player2
+                
         elif event.type == pygame.KEYUP:
-            if event.key in (pygame.K_DOWN, pygame.K_s):
+            if event.key == pygame.K_DOWN:
                 player.pressed_keys["down"] = False
-            elif event.key in (pygame.K_UP, pygame.K_w):
+            elif event.key == pygame.K_UP:
                 player.pressed_keys["up"] = False
-            elif event.key in (pygame.K_LEFT, pygame.K_a):
+            elif event.key == pygame.K_LEFT:
                 player.pressed_keys["left"] = False
-            elif event.key in (pygame.K_RIGHT, pygame.K_d):
+            elif event.key == pygame.K_RIGHT:
                 player.pressed_keys["right"] = False
-            
+
+
+            if event.key == pygame.K_s:
+                player2.pressed_keys["down"] = False
+            elif event.key == pygame.K_w:
+                player2.pressed_keys["up"] = False
+            elif event.key == pygame.K_a:
+                player2.pressed_keys["left"] = False
+            elif event.key == pygame.K_d:
+                player2.pressed_keys["right"] = False
 
             if event.key - 48 in levels:
                 games_state["current_level"] = levels[event.key - 48]
@@ -168,6 +216,9 @@ def render_progress_bar(pos_y, pos_x, percent, color=WHITE):
 from settings import screen
 
 
+
+
+
 pygame.display.set_caption("Snake")
 clock = pygame.time.Clock()
 while True:
@@ -179,9 +230,17 @@ while True:
 
     player.handle_movement_ques()
     player.loop_logic()
+
+
+    player2.handle_movement_ques()
+    player2.loop_logic()
+    
     screen.fill(BLACK)
-    games_state['current_level'].draw_board(camera_middle)
     player.draw(camera_middle)
+    player2.draw(camera_middle)
+
+    games_state['current_level'].draw_board(camera_middle)
+
 
 
 
@@ -193,18 +252,43 @@ while True:
     for button in buttons:
         button_rendered(button)
 
+
+    for _ in range(10):
+        add_sand_pixel()
+
+            
+    for pixel in sand_pixels:
+        pixel.draw(camera_middle)
+        if pixel.live == False: 
+            pixel.till_melted_countdown+=1
+            if pixel.till_melted_countdown == 0:
+                sand_pixels.remove(pixel)
+            continue
+        pixel: Sand_pixel
+        random_number = randint(0, 12)
+        pixel_moved_sidewase = False
+        if random_number == 0:
+             pixel_moved_sidewase = pixel.attempt_to_move_by(6, 0)
+        elif random_number < 7:
+             pixel_moved_sidewase = pixel.attempt_to_move_by(-6, 0)
+        for _ in range(3 if pixel_moved_sidewase else 1):
+            if not pixel.attempt_to_move_by(0, pixel.fall_amount):
+                pixel.live = False
+            pixel.fall_amount+=.1
+
+        
+
     pygame.display.update()
 
     custom_event_loop.frames_passed+=1
 
 
-    
 
 
 
 
 
-    camera_follow(player)
+    camera_follow(camera.player_being_followed)
 
 
     if custom_event_loop.frames_passed in scheduled_events:
@@ -216,6 +300,8 @@ while True:
     if custom_event_loop.frames_passed%20 == 0:
         player.health-=1
     print(f'{player.health = }')
+
+    list(player.followers.keys())[-1].size_x = player.health
     
 
     
@@ -228,8 +314,7 @@ while True:
 
 # Todo
 
-# add buttons
-# add sand
+# add sand collision to sand
 # green door next level, orange door last level
 # make coins appear piratically
 # paralax stars

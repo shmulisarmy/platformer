@@ -56,6 +56,20 @@ class Object:
         self.draw_children()
 
 
+
+    def attempt_to_move_by(self, x, y):
+        new_x = self.x+x
+        new_y = self.y+y
+        print(f'{new_y = }')
+        
+        from game_state import games_state
+        if not games_state['current_level'].colliding_with_board(Object(new_y, new_x, self.size_x, self.size_y)):
+            self.x = new_x
+            self.y = new_y
+            return True
+        return False
+
+
     @override
     def __hash__(self) -> int:
         return hash((self.size_x, self.size_y))

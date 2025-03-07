@@ -13,6 +13,8 @@ middle_position = {
     "y": 0,
 }
 
+player_being_followed = None
+
 
 
 def camera_follow(object: 'Object'):
